@@ -22,7 +22,7 @@ import React from "react";
 function InfoForm() {
   const form = Form.useForm()[0];
 
-  function onFinish(values) {}
+  function onFinish(values: any) {}
 
   return (
     <>
