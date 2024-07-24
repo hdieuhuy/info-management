@@ -15,8 +15,8 @@ import {
   Popconfirm,
   Row,
   Select,
-  Space,
 } from "antd";
+import Link from "next/link";
 import React from "react";
 
 function InfoForm() {
@@ -767,7 +767,9 @@ function InfoForm() {
 
           <Row justify={"end"} gutter={[10, 10]}>
             <Col>
-              <Button style={{ width: 80, height: 40 }}>Trở lại</Button>
+              <Button style={{ width: 80, height: 40 }}>
+                <Link href="/">Trở lại</Link>
+              </Button>
             </Col>
 
             <Col>

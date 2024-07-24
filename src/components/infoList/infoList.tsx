@@ -1,11 +1,27 @@
 "use client";
 
 import React, { useRef, useState } from "react";
-import { Button, Flex, Input, message, Popconfirm, Space, Table } from "antd";
+import {
+  Button,
+  Col,
+  Flex,
+  Input,
+  message,
+  Popconfirm,
+  Row,
+  Space,
+  Table,
+} from "antd";
 import type { InputRef, TableColumnsType, TableColumnType } from "antd";
 import { FilterDropdownProps } from "antd/es/table/interface";
-import { DeleteFilled, EditFilled, SearchOutlined } from "@ant-design/icons";
+import {
+  DeleteFilled,
+  EditFilled,
+  PlusOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
 import { orange, red } from "@ant-design/colors";
+import Link from "next/link";
 
 interface DataType {
   key: string;
@@ -205,7 +221,21 @@ function InfoList() {
     },
   ];
 
-  return <Table columns={columns} dataSource={data} />;
+  return (
+    <Row gutter={[16, 16]}>
+      <Col xl={24}>
+        <Row justify={"end"}>
+          <Button type="primary" icon={<PlusOutlined />}>
+            <Link href="create">Thêm mới</Link>
+          </Button>
+        </Row>
+      </Col>
+
+      <Col xl={24}>
+        <Table columns={columns} dataSource={data} />
+      </Col>
+    </Row>
+  );
 }
 
 export default InfoList;
