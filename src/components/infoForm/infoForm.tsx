@@ -30,7 +30,7 @@ function InfoForm({ id, data }: { id: string; data: IInfo }) {
   const isTypeCreate = id === "create";
 
   useEffect(() => {
-    if (Array.isArray(data) && data.length <= 0) return;
+    if (isTypeCreate) return;
 
     const _values = {
       ...data,
