@@ -7,7 +7,7 @@ import { revalidatePath } from "next/cache";
 export async function getAllInfo(): Promise<IInfo[] | undefined> {
   try {
     connectToDatabase();
-    const info = await Info.find();
+    const info = await Info.find({ _destroy: false });
     return info;
   } catch (error) {
     console.log(error);
@@ -60,6 +60,28 @@ export async function updateInfo(
     return {
       success: true,
       message: "Cập nhật thông tin thành công!",
+    };
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function deleteInfo({ id }: { id: string }, path = "") {
+  try {
+    connectToDatabase();
+    const findInfo = await Info.findById(id);
+    if (!findInfo) return;
+    await Info.findByIdAndUpdate(
+      id,
+      { _destroy: true },
+      {
+        new: true,
+      }
+    );
+    revalidatePath(path || "/");
+    return {
+      success: true,
+      message: "Xoá thông tin thành công!",
     };
   } catch (error) {
     console.log(error);

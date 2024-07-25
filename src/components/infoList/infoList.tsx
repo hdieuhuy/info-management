@@ -7,6 +7,7 @@ import {
   Flex,
   Input,
   message,
+  notification,
   Popconfirm,
   Row,
   Space,
@@ -25,14 +26,27 @@ import { blue, orange, red } from "@ant-design/colors";
 import Link from "next/link";
 import { IInfo } from "@/databases/info.model";
 import dayjs from "dayjs";
+import { deleteInfo } from "@/lib/actions/info.actions";
 
 function InfoList({ data }: { data: IInfo[] }) {
   console.log({ data });
 
   if (Array.isArray(data) && data.length <= 0) return null;
 
-  const confirm = () => {
-    message.success("Click on Yes");
+  const onDelete = async (id: string) => {
+    try {
+      const res = await deleteInfo({ id });
+
+      if (res?.success) {
+        notification.success({
+          message: res?.message,
+        });
+      } else {
+        notification.error({
+          message: res?.message,
+        });
+      }
+    } catch (error) {}
   };
 
   const columns: TableColumnsType<IInfo> = [
@@ -100,7 +114,7 @@ function InfoList({ data }: { data: IInfo[] }) {
           <Popconfirm
             title="Delete the task"
             description="Are you sure to delete this task?"
-            onConfirm={confirm}
+            onConfirm={() => onDelete(record._id)}
             okText="Yes"
             cancelText="No"
           >
@@ -113,8 +127,6 @@ function InfoList({ data }: { data: IInfo[] }) {
       ),
     },
   ];
-
-  console.log({ columns });
 
   return (
     <Row gutter={[16, 16]}>
