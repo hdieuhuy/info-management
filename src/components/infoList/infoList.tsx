@@ -17,177 +17,61 @@ import { FilterDropdownProps } from "antd/es/table/interface";
 import {
   DeleteFilled,
   EditFilled,
+  EyeFilled,
   PlusOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
-import { orange, red } from "@ant-design/colors";
+import { blue, orange, red } from "@ant-design/colors";
 import Link from "next/link";
+import { IInfo } from "@/databases/info.model";
+import dayjs from "dayjs";
 
-interface DataType {
-  key: string;
-  name: string;
-  age: number;
-  address: string;
-}
+function InfoList({ data }: { data: IInfo[] }) {
+  console.log({ data });
 
-type DataIndex = keyof DataType;
-
-const data: DataType[] = [
-  {
-    key: "1",
-    name: "John Brown",
-    age: 32,
-    address: "New York No. 1 Lake Park",
-  },
-  {
-    key: "2",
-    name: "Joe Black",
-    age: 42,
-    address: "London No. 1 Lake Park",
-  },
-  {
-    key: "3",
-    name: "Jim Green",
-    age: 32,
-    address: "Sydney No. 1 Lake Park",
-  },
-  {
-    key: "4",
-    name: "Jim Red",
-    age: 32,
-    address: "London No. 2 Lake Park",
-  },
-];
-
-function InfoList() {
-  const [searchText, setSearchText] = useState("");
-  const [searchedColumn, setSearchedColumn] = useState("");
-  const searchInput = useRef<InputRef>(null);
-
-  const handleSearch = (
-    selectedKeys: string[],
-    confirm: FilterDropdownProps["confirm"],
-    dataIndex: DataIndex
-  ) => {
-    confirm();
-    setSearchText(selectedKeys[0]);
-    setSearchedColumn(dataIndex);
-  };
-
-  const handleReset = (clearFilters: () => void) => {
-    clearFilters();
-    setSearchText("");
-  };
+  if (Array.isArray(data) && data.length <= 0) return null;
 
   const confirm = () => {
     message.success("Click on Yes");
   };
 
-  const getColumnSearchProps = (
-    dataIndex: DataIndex
-  ): TableColumnType<DataType> => ({
-    filterDropdown: ({
-      setSelectedKeys,
-      selectedKeys,
-      confirm,
-      clearFilters,
-      close,
-    }) => (
-      <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
-        <Input
-          ref={searchInput}
-          placeholder={`Search ${dataIndex}`}
-          value={selectedKeys[0]}
-          onChange={(e) =>
-            setSelectedKeys(e.target.value ? [e.target.value] : [])
-          }
-          onPressEnter={() =>
-            handleSearch(selectedKeys as string[], confirm, dataIndex)
-          }
-          style={{ marginBottom: 8, display: "block" }}
-        />
-        <Space>
-          <Button
-            type="primary"
-            onClick={() =>
-              handleSearch(selectedKeys as string[], confirm, dataIndex)
-            }
-            icon={<SearchOutlined />}
-            size="small"
-            style={{ width: 90 }}
-          >
-            Search
-          </Button>
-          <Button
-            onClick={() => clearFilters && handleReset(clearFilters)}
-            size="small"
-            style={{ width: 90 }}
-          >
-            Reset
-          </Button>
-          <Button
-            type="link"
-            size="small"
-            onClick={() => {
-              confirm({ closeDropdown: false });
-              setSearchText((selectedKeys as string[])[0]);
-              setSearchedColumn(dataIndex);
-            }}
-          >
-            Filter
-          </Button>
-          <Button
-            type="link"
-            size="small"
-            onClick={() => {
-              close();
-            }}
-          >
-            close
-          </Button>
-        </Space>
-      </div>
-    ),
-    filterIcon: (filtered: boolean) => (
-      <SearchOutlined style={{ color: filtered ? "#1677ff" : undefined }} />
-    ),
-    onFilter: (value, record) =>
-      record[dataIndex]
-        .toString()
-        .toLowerCase()
-        .includes((value as string).toLowerCase()),
-    onFilterDropdownOpenChange: (visible) => {
-      if (visible) {
-        setTimeout(() => searchInput.current?.select(), 100);
-      }
+  const columns: TableColumnsType<IInfo> = [
+    {
+      title: "#",
+      dataIndex: "#",
+      key: "#",
+      render: (_, __, i) => i + 1,
     },
-  });
-
-  const columns: TableColumnsType<DataType> = [
     {
       title: "Họ Tên",
-      dataIndex: "name",
-      key: "name",
-      sorter: (a, b) => a.name.length - b.name.length,
+      dataIndex: "fullname",
+      key: "fullname",
+      sorter: (a: any, b: any) => a.fullname.length - b.fullname.length,
     },
     {
       title: "Ngày Sinh",
-      dataIndex: "age",
-      key: "age",
-      sorter: (a, b) => a.age - b.age,
+      dataIndex: "birthday",
+      key: "birthday",
+      render: (text) => dayjs(text).format("DD/MM/YYYY"),
+    },
+    {
+      title: "Nơi thường trú của gia đình",
+      dataIndex: "permanent_address",
+      key: "permanent_address",
+      // sorter: (a, b) => a.address.length - b.address.length,
     },
     {
       title: "CCCD/CMND",
-      dataIndex: "address",
-      key: "address",
-      sorter: (a, b) => a.address.length - b.address.length,
+      dataIndex: "identification",
+      key: "identification",
+      // sorter: (a, b) => a.address.length - b.address.length,
     },
     {
       title: "Trình độ văn hoá",
-      dataIndex: "address",
-      key: "address",
+      dataIndex: "level",
+      key: "level",
       width: "15%",
-      sorter: (a, b) => a.address.length - b.address.length,
+      // sorter: (a, b) => a.address.length - b.address.length,
       render: (text) => `${text}/12`,
     },
     {
@@ -197,12 +81,21 @@ function InfoList() {
       fixed: "right",
       align: "center",
       width: "8%",
-      render: () => (
+      render: (_, record) => (
         <Flex justify="center" align="center" gap={4}>
-          <Button
-            type="text"
-            icon={<EditFilled style={{ color: orange.primary }} />}
-          ></Button>
+          <Link href={`/view/${record._id || ""}`}>
+            <Button
+              type="text"
+              icon={<EyeFilled style={{ color: blue.primary }} />}
+            ></Button>
+          </Link>
+
+          <Link href={`/${record._id || ""}`}>
+            <Button
+              type="text"
+              icon={<EditFilled style={{ color: orange.primary }} />}
+            ></Button>
+          </Link>
 
           <Popconfirm
             title="Delete the task"
@@ -221,18 +114,26 @@ function InfoList() {
     },
   ];
 
+  console.log({ columns });
+
   return (
     <Row gutter={[16, 16]}>
       <Col xl={24}>
         <Row justify={"end"}>
-          <Button type="primary" icon={<PlusOutlined />}>
-            <Link href="create">Thêm mới</Link>
-          </Button>
+          <Link href="create">
+            <Button type="primary" icon={<PlusOutlined />}>
+              Thêm mới
+            </Button>
+          </Link>
         </Row>
       </Col>
 
       <Col xl={24}>
-        <Table columns={columns} dataSource={data} />
+        <Table
+          columns={columns}
+          dataSource={data.map((item) => ({ ...item, _id: item._id }))}
+          pagination={false}
+        />
       </Col>
     </Row>
   );
