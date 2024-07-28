@@ -38,7 +38,7 @@ function InfoList({ data }: { data: IInfo[] }) {
   }, []);
 
   useEffect(() => {
-    if (isEmpty(currentUser)) return router.push("/sign-up");
+    if (isEmpty(currentUser)) return router.push("/sign-in");
   }, []);
 
   const onDelete = async (id: string) => {
