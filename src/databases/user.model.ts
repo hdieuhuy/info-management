@@ -1,14 +1,22 @@
 import { EUserRole, EUserStatus } from "@/types/enums";
 import { Document, Schema, model, models } from "mongoose";
 
-export interface IUser extends Document {
+export interface IUser {
   name: string;
   username: string;
   password: string;
   created_at: Date;
   role: EUserRole;
 }
-const userSchema = new Schema<IUser>({
+
+export interface IUserDocument extends Document {
+  name: string;
+  username: string;
+  password: string;
+  created_at: Date;
+  role: EUserRole;
+}
+const userSchema = new Schema<IUserDocument>({
   name: { type: String, unique: true },
 
   username: {

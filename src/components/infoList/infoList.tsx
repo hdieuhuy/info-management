@@ -2,7 +2,7 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Col, Flex, notification, Popconfirm, Row, Table } from "antd";
 import type { TableColumnsType } from "antd";
 import {
@@ -21,18 +21,24 @@ import { EUserRole } from "@/types/enums";
 import { isEmpty } from "lodash";
 import { useRouter } from "next/navigation";
 import * as XLSX from "xlsx";
+import { IUser } from "@/databases/user.model";
 
 function InfoList({ data }: { data: IInfo[] }) {
   const router = useRouter();
+  const [currentUser, setCurrentUser] = useState<Partial<IUser>>({});
 
   if (Array.isArray(data) && data.length <= 0) return null;
 
-  const user = localStorage.getItem("user")
-    ? JSON.parse(localStorage.getItem("user") || "")
-    : "";
+  useEffect(() => {
+    const user = localStorage.getItem("user")
+      ? JSON.parse(localStorage.getItem("user") || "")
+      : "";
+
+    setCurrentUser(user);
+  }, []);
 
   useEffect(() => {
-    if (isEmpty(user)) return router.push("/sign-up");
+    if (isEmpty(currentUser)) return router.push("/sign-up");
   }, []);
 
   const onDelete = async (id: string) => {
@@ -184,7 +190,7 @@ function InfoList({ data }: { data: IInfo[] }) {
             ></Button>
           </Link>
 
-          {user.role === EUserRole.ADMIN && (
+          {currentUser.role === EUserRole.ADMIN && (
             <Link href={`/${record._id || ""}`}>
               <Button
                 type="text"
@@ -193,7 +199,7 @@ function InfoList({ data }: { data: IInfo[] }) {
             </Link>
           )}
 
-          {user.role === EUserRole.ADMIN && (
+          {currentUser.role === EUserRole.ADMIN && (
             <Popconfirm
               title="Delete the task"
               description="Are you sure to delete this task?"

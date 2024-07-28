@@ -23,26 +23,34 @@ import {
 import { FormProps } from "antd/lib";
 import dayjs from "dayjs";
 import Link from "next/link";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
 import { useRouter } from "next/navigation";
 import { EUserRole } from "@/types/enums";
 import { isEmpty } from "lodash";
+import { IUser } from "@/databases/user.model";
 
 function InfoForm({ id, data }: { id: string; data: IInfo }) {
+  const [currentUser, setCurrentUser] = useState<Partial<IUser>>({});
+
   const form = Form.useForm()[0];
   const router = useRouter();
   const isTypeCreate = id === "create";
-  const user = localStorage.getItem("user")
-    ? JSON.parse(localStorage.getItem("user") || "")
-    : null;
 
   useEffect(() => {
-    if (isEmpty(user)) return router.push("/sign-up");
+    const user = localStorage.getItem("user")
+      ? JSON.parse(localStorage.getItem("user") || "")
+      : "";
+
+    setCurrentUser(user);
   }, []);
 
   useEffect(() => {
-    if (user.role === EUserRole.USER && !isTypeCreate) {
+    if (isEmpty(currentUser)) return router.push("/sign-up");
+  }, []);
+
+  useEffect(() => {
+    if (currentUser.role === EUserRole.USER && !isTypeCreate) {
       router.push("/");
     }
   }, []);
@@ -136,7 +144,7 @@ function InfoForm({ id, data }: { id: string; data: IInfo }) {
       if (isTypeCreate) {
         const res = await createInfo({
           ...inputs,
-          create_by: user.name,
+          create_by: currentUser.name,
           create_at: dayjs().format("YYYY-MM-DD"),
         } as any);
 
@@ -157,7 +165,7 @@ function InfoForm({ id, data }: { id: string; data: IInfo }) {
             id,
             create_by: data.create_by,
             created_at: data.created_at,
-            update_by: user.name,
+            update_by: currentUser.name,
             update_at: dayjs().format("YYYY-MM-DD"),
           } as any,
           "/"
