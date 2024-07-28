@@ -303,9 +303,7 @@ function InfoView({ id, data }: { id: string; data: IInfo }) {
                             label="Họ tên"
                             name={["mother_info", "fullname"]}
                           >
-                            {data.mother_info.fullname === "LIVE"
-                              ? "Sống"
-                              : "Còn"}
+                            {data.mother_info.fullname}
                           </Form.Item>
                         </Col>
 
@@ -500,16 +498,6 @@ function InfoView({ id, data }: { id: string; data: IInfo }) {
               <Link href="/">
                 <Button style={{ width: 80, height: 40 }}>Trở lại</Button>
               </Link>
-            </Col>
-
-            <Col>
-              <Button
-                style={{ width: 80, height: 40 }}
-                type="primary"
-                htmlType="submit"
-              >
-                Lưu
-              </Button>
             </Col>
           </Row>
         </Flex>

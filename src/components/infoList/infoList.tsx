@@ -1,37 +1,39 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable react-hooks/rules-of-hooks */
 "use client";
 
-import React, { useRef, useState } from "react";
-import {
-  Button,
-  Col,
-  Flex,
-  Input,
-  message,
-  notification,
-  Popconfirm,
-  Row,
-  Space,
-  Table,
-} from "antd";
-import type { InputRef, TableColumnsType, TableColumnType } from "antd";
-import { FilterDropdownProps } from "antd/es/table/interface";
+import React, { useEffect } from "react";
+import { Button, Col, Flex, notification, Popconfirm, Row, Table } from "antd";
+import type { TableColumnsType } from "antd";
 import {
   DeleteFilled,
   EditFilled,
+  ExportOutlined,
   EyeFilled,
   PlusOutlined,
-  SearchOutlined,
 } from "@ant-design/icons";
-import { blue, orange, red } from "@ant-design/colors";
+import { blue, green, orange, red } from "@ant-design/colors";
 import Link from "next/link";
 import { IInfo } from "@/databases/info.model";
 import dayjs from "dayjs";
 import { deleteInfo } from "@/lib/actions/info.actions";
+import { EUserRole } from "@/types/enums";
+import { isEmpty } from "lodash";
+import { useRouter } from "next/navigation";
+import * as XLSX from "xlsx";
 
 function InfoList({ data }: { data: IInfo[] }) {
-  console.log({ data });
+  const router = useRouter();
 
   if (Array.isArray(data) && data.length <= 0) return null;
+
+  const user = localStorage.getItem("user")
+    ? JSON.parse(localStorage.getItem("user") || "")
+    : "";
+
+  useEffect(() => {
+    if (isEmpty(user)) return router.push("/sign-up");
+  }, []);
 
   const onDelete = async (id: string) => {
     try {
@@ -49,6 +51,65 @@ function InfoList({ data }: { data: IInfo[] }) {
     } catch (error) {}
   };
 
+  const exportToExcel = () => {
+    const formatData = data.map((item) => ({
+      "Họ tên": item.fullname,
+      "Sinh ngày": dayjs(item.birthday).format("DD/MM/YYYY"),
+      "Giới tính": item.gender === "MEN" ? "Nam" : "Nữ",
+      "CCCD/CMND": item.identification,
+      "Nơi đăng ký khai sinh": item.birth_place,
+      "Quê Quán": item.country,
+      "Dân tộc": item.nation,
+      "Tôn giáo": item.nationality,
+      "Quốc tịch": item.religion,
+      "Nơi thường trú của gia đình": item.permanent_address,
+      "Nơi ở hiện tại của bản thân": item.residence_address,
+      "Thành phần gia đình": item.family_work_main,
+      "Bản thân": item.your_work_main,
+      "Trình độ văn hoá": `${item.level}/12`,
+      "Trình độ chuyên môn": item.qualification,
+      "Chuyên ngành đào tạo": item.qualification_main,
+      "Ngày vào Đảng CSVN": dayjs(item.date_join_party).format("DD/MM/YYYY"),
+      "Ngày vào Đoàn TNCS Hồ Chí Minh": dayjs(item.date_join_group).format(
+        "DD/MM/YYYY"
+      ),
+      "Ngoại ngữ": item.language,
+      "Khen thưởng": item.bonus,
+      "Kỷ luật": item.discipline,
+      "Nghề nghiệp": item.job,
+      "Lương, Ngạch": item.wage,
+      Bậc: item.wage_step,
+      "Nơi làm việc/ Học tậ": item.workplace,
+
+      "Họ tên (Cha)": item.father_info.fullname,
+      "Sinh Ngày (Cha)": dayjs(item.father_info.birthday).format("DD/MM/YYYY"),
+      "Công việc (Cha)": item.father_info.job,
+      "Sống/Mất (Cha)": item.father_info.isDead,
+
+      "Họ tên (Mẹ)": item.mother_info.fullname,
+      "Sinh Ngày (Mẹ)": dayjs(item.mother_info.birthday).format("DD/MM/YYYY"),
+      "Công việc (Mẹ)": item.mother_info.job,
+      "Sống/Mất (Mẹ)": item.mother_info.isDead,
+
+      "Họ tên (Vợ/Chồng)": item.couple_info.fullname,
+      "Sinh Ngày (Vợ/Chồng)": dayjs(item.couple_info.birthday).format(
+        "DD/MM/YYYY"
+      ),
+      "Công việc (Vợ/Chồng)": item.couple_info.job,
+      "Bản thân đã có": item.couple_info.son_count,
+
+      "Cha mẹ có nhiêu người con?": item.family_info.son_count,
+      "Số lượng con trai": item.family_info.boy_count,
+      "Số lượng con gái": item.family_info.girl_count,
+      "Bản thân là con thứ": item.family_info.your_step,
+    }));
+
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(formatData);
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+    XLSX.writeFile(workbook, "export-data.xlsx");
+  };
+
   const columns: TableColumnsType<IInfo> = [
     {
       title: "#",
@@ -60,13 +121,22 @@ function InfoList({ data }: { data: IInfo[] }) {
       title: "Họ Tên",
       dataIndex: "fullname",
       key: "fullname",
-      sorter: (a: any, b: any) => a.fullname.length - b.fullname.length,
+      render: (text, record) => (
+        <Link href={`/view/${record?._id}`}>{text}</Link>
+      ),
     },
     {
       title: "Ngày Sinh",
       dataIndex: "birthday",
       key: "birthday",
       render: (text) => dayjs(text).format("DD/MM/YYYY"),
+    },
+    {
+      title: "Giới tính",
+      dataIndex: "gender",
+      key: "gender",
+      render: (text) => (text === "MEN" ? "Nam" : "Nữ"),
+      // sorter: (a, b) => a.address.length - b.address.length,
     },
     {
       title: "Nơi thường trú của gia đình",
@@ -84,9 +154,19 @@ function InfoList({ data }: { data: IInfo[] }) {
       title: "Trình độ văn hoá",
       dataIndex: "level",
       key: "level",
-      width: "15%",
       // sorter: (a, b) => a.address.length - b.address.length,
       render: (text) => `${text}/12`,
+    },
+    {
+      title: "Người tạo",
+      dataIndex: "create_by",
+      key: "create_by",
+    },
+    {
+      title: "Ngày tạo",
+      dataIndex: "created_at",
+      key: "created_at",
+      render: (text) => (text ? dayjs(text).format("DD/MM/YYYY") : null),
     },
     {
       title: "Hành động",
@@ -104,25 +184,29 @@ function InfoList({ data }: { data: IInfo[] }) {
             ></Button>
           </Link>
 
-          <Link href={`/${record._id || ""}`}>
-            <Button
-              type="text"
-              icon={<EditFilled style={{ color: orange.primary }} />}
-            ></Button>
-          </Link>
+          {user.role === EUserRole.ADMIN && (
+            <Link href={`/${record._id || ""}`}>
+              <Button
+                type="text"
+                icon={<EditFilled style={{ color: orange.primary }} />}
+              ></Button>
+            </Link>
+          )}
 
-          <Popconfirm
-            title="Delete the task"
-            description="Are you sure to delete this task?"
-            onConfirm={() => onDelete(record._id)}
-            okText="Yes"
-            cancelText="No"
-          >
-            <Button
-              type="text"
-              icon={<DeleteFilled style={{ color: red.primary }} />}
-            ></Button>
-          </Popconfirm>
+          {user.role === EUserRole.ADMIN && (
+            <Popconfirm
+              title="Delete the task"
+              description="Are you sure to delete this task?"
+              onConfirm={() => onDelete(record._id)}
+              okText="Yes"
+              cancelText="No"
+            >
+              <Button
+                type="text"
+                icon={<DeleteFilled style={{ color: red.primary }} />}
+              ></Button>
+            </Popconfirm>
+          )}
         </Flex>
       ),
     },
@@ -131,19 +215,39 @@ function InfoList({ data }: { data: IInfo[] }) {
   return (
     <Row gutter={[16, 16]}>
       <Col xl={24}>
-        <Row justify={"end"}>
-          <Link href="create">
-            <Button type="primary" icon={<PlusOutlined />}>
-              Thêm mới
+        <Row justify={"end"} gutter={[12, 12]}>
+          <Col>
+            <Button
+              type="primary"
+              style={{
+                borderColor: green.primary,
+                backgroundColor: green.primary,
+              }}
+              icon={<ExportOutlined />}
+              onClick={exportToExcel}
+            >
+              Xuất file excel
             </Button>
-          </Link>
+          </Col>
+
+          <Col>
+            <Link href="create">
+              <Button type="primary" icon={<PlusOutlined />}>
+                Thêm mới
+              </Button>
+            </Link>
+          </Col>
         </Row>
       </Col>
 
       <Col xl={24}>
         <Table
           columns={columns}
-          dataSource={data.map((item) => ({ ...item, _id: item._id }))}
+          dataSource={data.map((item) => ({
+            ...item,
+            key: item._id,
+            _id: item._id,
+          }))}
           pagination={false}
         />
       </Col>

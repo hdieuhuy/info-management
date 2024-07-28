@@ -25,9 +25,27 @@ import dayjs from "dayjs";
 import Link from "next/link";
 import React, { useEffect } from "react";
 
+import { useRouter } from "next/navigation";
+import { EUserRole } from "@/types/enums";
+import { isEmpty } from "lodash";
+
 function InfoForm({ id, data }: { id: string; data: IInfo }) {
   const form = Form.useForm()[0];
+  const router = useRouter();
   const isTypeCreate = id === "create";
+  const user = localStorage.getItem("user")
+    ? JSON.parse(localStorage.getItem("user") || "")
+    : null;
+
+  useEffect(() => {
+    if (isEmpty(user)) return router.push("/sign-up");
+  }, []);
+
+  useEffect(() => {
+    if (user.role === EUserRole.USER && !isTypeCreate) {
+      router.push("/");
+    }
+  }, []);
 
   useEffect(() => {
     if (isTypeCreate) return;
@@ -116,9 +134,14 @@ function InfoForm({ id, data }: { id: string; data: IInfo }) {
       };
 
       if (isTypeCreate) {
-        const res = await createInfo(inputs as any);
+        const res = await createInfo({
+          ...inputs,
+          create_by: user.name,
+          create_at: dayjs().format("YYYY-MM-DD"),
+        } as any);
 
         if (res?.success) {
+          form.resetFields();
           notification.success({
             message: "Tạo thông tin thành công",
           });
@@ -128,7 +151,17 @@ function InfoForm({ id, data }: { id: string; data: IInfo }) {
           });
         }
       } else {
-        const res = await updateInfo({ id, ...inputs } as any, "/");
+        const res = await updateInfo(
+          {
+            ...inputs,
+            id,
+            create_by: data.create_by,
+            created_at: data.created_at,
+            update_by: user.name,
+            update_at: dayjs().format("YYYY-MM-DD"),
+          } as any,
+          "/"
+        );
         if (res?.success) {
           notification.success({
             message: res.message,

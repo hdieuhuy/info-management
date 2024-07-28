@@ -310,6 +310,18 @@ const infoSchema = new Schema<IInfoDocument>({
     },
   ],
 
+  created_at: {
+    type: Date,
+    default: Date.now(),
+  },
+  create_by: {
+    type: String,
+  },
+  update_at: {
+    type: Date,
+  },
+  update_by: { type: String },
+
   _destroy: {
     type: Boolean,
     default: false,
